@@ -1,15 +1,24 @@
-package router
+package middleware
 
 import (
-	"fmt"
-	"time"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func auth() gin.HandlerFunc {
+type checkHeader struct {
+	Key string `header:"key" binding:"required"`
+}
+
+func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t := time.Now()
-		fmt.Printf("gogo %v \n", t)
+		h := checkHeader{}
+		if err := c.ShouldBindHeader(&h); err != nil {
+			c.AbortWithStatusJSON(http.StatusOK, gin.H{
+				"errorCode": "01",
+				"status":    "502",
+			})
+		}
+		c.Next()
 	}
 }
